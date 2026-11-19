@@ -1,9 +1,12 @@
 // Leitura de inventário CS2 público da Steam.
 const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36';
 
-/** Aceita SteamID64, link /profiles/ID, link /id/vanity ou só o vanity. Devolve SteamID64. */
+/** Aceita link de troca, SteamID64, link /profiles/ID, link /id/vanity ou só o vanity. Devolve SteamID64. */
 export async function resolveSteamId(input, fetchImpl = fetch) {
   const raw = String(input || '').trim();
+  // Link de troca: partner = accountid (32 bits); SteamID64 = partner + 76561197960265728
+  const trade = raw.match(/steamcommunity\.com\/tradeoffer\/new\/?\?[^\s]*?\bpartner=(\d+)/i);
+  if (trade) return (BigInt(trade[1]) + 76561197960265728n).toString();
   let m = raw.match(/\b(7656119\d{10})\b/);
   if (m) return m[1];
   m = raw.match(/steamcommunity\.com\/id\/([^/?#\s]+)/i);

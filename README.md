@@ -11,7 +11,7 @@ Bot de WhatsApp que cota um inventário de CS2 com preços do **YouPin898**, em 
 | `!preco <nome exato> [compra]` | Preço de um item (ex.: `!preco AK-47 \| Redline (Field-Tested)`) |
 | `!ajuda` | Lista de comandos |
 
-`<steam>` pode ser SteamID64, link do perfil (`/profiles/...` ou `/id/...`) ou o nome do perfil. O inventário precisa estar público.
+`<steam>` pode ser o **link de troca** (`.../tradeoffer/new/?partner=...&token=...`), SteamID64, link do perfil (`/profiles/...` ou `/id/...`) ou o nome do perfil. O inventário precisa estar público (o link de troca só identifica a conta, não dá acesso a inventário privado).
 
 ## Como rodar
 ```bash

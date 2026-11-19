@@ -76,3 +76,9 @@ test('csgotrader: menor anúncio e maior ordem', async () => {
   assert.equal(await c.highestBuyOrder('B'), null);
   assert.equal(await c.lowestListing('Z'), null);
 });
+
+import { resolveSteamId } from '../src/steam.js';
+test('link de troca vira SteamID64', async () => {
+  assert.equal(await resolveSteamId('https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc'), '76561197960265729');
+  assert.equal(await resolveSteamId('https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=xyz'), '76561198083722517');
+});
