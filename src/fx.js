@@ -1,16 +1,18 @@
 import { config } from './config.js';
 
-let cached = { rate: null, at: 0 };
+const cache = {};
 
-/** Cotação CNY -> BRL. Usa CNY_BRL_RATE se definido; senão AwesomeAPI (cache de 1h). */
-export async function getCnyBrl(fetchImpl = fetch) {
-  if (config.cnyBrlRate) return config.cnyBrlRate;
-  if (cached.rate && Date.now() - cached.at < 3_600_000) return cached.rate;
-  const res = await fetchImpl('https://economia.awesomeapi.com.br/json/last/CNY-BRL');
-  if (!res.ok) throw new Error('Não consegui obter a cotação CNY→BRL. Defina CNY_BRL_RATE no .env.');
+/** Cotação CURRENCY -> BRL. Usa *_BRL_RATE do .env se definido; senão AwesomeAPI (cache de 1h). */
+export async function getRate(currency = 'CNY', fetchImpl = fetch) {
+  const fixed = currency === 'USD' ? config.usdBrlRate : config.cnyBrlRate;
+  if (fixed) return fixed;
+  const c = cache[currency];
+  if (c && Date.now() - c.at < 3_600_000) return c.rate;
+  const res = await fetchImpl(`https://economia.awesomeapi.com.br/json/last/${currency}-BRL`);
+  if (!res.ok) throw new Error(`Não consegui obter a cotação ${currency}→BRL. Defina ${currency}_BRL_RATE no .env.`);
   const j = await res.json();
-  const rate = Number(j?.CNYBRL?.bid);
-  if (!rate) throw new Error('Cotação CNY→BRL inválida.');
-  cached = { rate, at: Date.now() };
+  const rate = Number(j?.[`${currency}BRL`]?.bid);
+  if (!rate) throw new Error(`Cotação ${currency}→BRL inválida.`);
+  cache[currency] = { rate, at: Date.now() };
   return rate;
 }

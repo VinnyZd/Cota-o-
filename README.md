@@ -22,12 +22,15 @@ npm start                # escaneie o QR em WhatsApp > Aparelhos conectados
 ```
 Teste sem WhatsApp: `node src/cli.js "!cotar <steam> compra"`. Testes: `npm test`.
 
-## Sobre a extensão CS2 Trader
-A extensão roda dentro do navegador e não pode ser acionada por um bot. Este bot consulta a mesma fonte
-(YouPin898) diretamente, com as duas métricas que você pediu (menor anúncio / maior ordem de compra).
+## Fonte de preços: API da extensão CS2 Trader
+Por padrão (`PRICE_SOURCE=csgotrader`) o bot baixa o mesmo JSON de preços que a extensão usa
+(`prices.csgotrader.app/latest/youpin898.json`), sem precisar de login. Por item:
+`starting_at` = menor anúncio, `highest_order` = maior ordem de compra. Os valores vêm em USD e são
+convertidos para BRL. A alternativa `PRICE_SOURCE=youpin` consulta o YouPin direto (exige `YOUPIN_TOKEN`).
 
 ## Pontos de atenção
-- **O YouPin não tem API pública oficial.** Os endpoints em `src/youpin.js` são os do site web e exigem o
+- **A URL/formato do CS2 Trader foi escrita de memória e não foi validada**: o ambiente em que desenvolvi bloqueia o host `prices.csgotrader.app`. Teste na sua máquina: `curl -s https://prices.csgotrader.app/latest/youpin898.json | head -c 500`. Se o nome do arquivo ou os campos forem outros, defina `CSGOTRADER_URL` ou ajuste `src/csgotrader.js`.
+- **No modo `youpin`, o YouPin não tem API pública oficial.** Os endpoints em `src/youpin.js` são os do site web e exigem o
   token da sua conta (`YOUPIN_TOKEN`: copie o header `authorization` em DevTools > Network, logado em youpin898.com).
   Eles podem mudar e o token expira. Os testes cobrem a lógica com respostas simuladas; **não foram validados
   contra o YouPin real**. Se algo vier vazio, ajuste os caminhos/campos no topo e em `listings()` de `youpin.js`.

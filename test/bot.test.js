@@ -14,6 +14,7 @@ test('parse modos', () => {
 });
 
 const provider = {
+  currency: 'USD',
   lowestListing: async (n) => ({ A: 10, B: 5 })[n] ?? null,
   highestBuyOrder: async (n) => ({ A: 8, B: 4 })[n] ?? null,
 };
@@ -21,13 +22,13 @@ const provider = {
 test('quoteItems soma e ordena, separa sem preço', async () => {
   clearCache();
   const q = await quoteItems({ items: [{ name: 'A', count: 2 }, { name: 'B', count: 1 }, { name: 'C', count: 1 }], mode: 'menor', provider, rate: 0.8, factor: 1 });
-  assert.equal(q.totalCny, 25);
+  assert.equal(q.totalSrc, 25);
   assert.equal(q.totalBrl, 20);
   assert.equal(q.rows[0].name, 'A');
   assert.equal(q.missing[0].name, 'C');
   clearCache();
   const c = await quoteItems({ items: [{ name: 'A', count: 1 }], mode: 'compra', provider, rate: 1, factor: 0.5 });
-  assert.equal(c.totalCny, 4);
+  assert.equal(c.totalSrc, 4);
 });
 
 test('falha total propaga erro', async () => {
@@ -38,17 +39,17 @@ test('falha total propaga erro', async () => {
 
 test('fluxo completo com Steam e FX simulados', async () => {
   clearCache();
-  process.env.CNY_BRL_RATE = '';
+  process.env.USD_BRL_RATE = '';
   const fetchImpl = async (url) => {
     if (url.includes('/inventory/')) return { ok: true, status: 200, json: async () => ({
       assets: [{ classid: '1', instanceid: '0', amount: '1' }, { classid: '1', instanceid: '0', amount: '1' }],
       descriptions: [{ classid: '1', instanceid: '0', marketable: 1, market_hash_name: 'A' }],
     }) };
-    return { ok: true, status: 200, json: async () => ({ CNYBRL: { bid: '0.75' } }) };
+    return { ok: true, status: 200, json: async () => ({ USDBRL: { bid: '0.75' } }) };
   };
   const out = await handle('!cotar 76561190000000000 compra', { provider, fetchImpl });
   assert.match(out[0], /Maior ordem de compra/);
-  assert.match(out[0], /¥16\.00/);
+  assert.match(out[0], /US\$16\.00/);
 });
 
 test('youpin: menor anúncio e maior compra com respostas simuladas', async () => {
@@ -64,4 +65,14 @@ test('youpin: menor anúncio e maior compra com respostas simuladas', async () =
 test('chunk respeita limite', () => {
   const parts = chunk(Array(100).fill('linha de teste').join('\n'), 200);
   assert.ok(parts.every((p) => p.length <= 200));
+});
+
+import { createCsgotrader } from '../src/csgotrader.js';
+test('csgotrader: menor anúncio e maior ordem', async () => {
+  const fetchImpl = async () => ({ ok: true, status: 200, json: async () => ({ A: { starting_at: { price: 3.5 }, highest_order: { price: 2.9 } }, B: { starting_at: { price: 1 } } }) });
+  const c = createCsgotrader({ fetchImpl, cfg: { csgotraderUrls: ['u'], cacheTtlMs: 1000 } });
+  assert.equal(await c.lowestListing('A'), 3.5);
+  assert.equal(await c.highestBuyOrder('A'), 2.9);
+  assert.equal(await c.highestBuyOrder('B'), null);
+  assert.equal(await c.lowestListing('Z'), null);
 });

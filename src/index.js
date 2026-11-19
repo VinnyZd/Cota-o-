@@ -1,12 +1,13 @@
 import { config } from './config.js';
 import { createYoupin } from './youpin.js';
+import { createCsgotrader } from './csgotrader.js';
 import { handle } from './commands.js';
 
 const { default: wweb } = await import('whatsapp-web.js');
 const { default: qrcode } = await import('qrcode-terminal');
 const { Client, LocalAuth } = wweb;
 
-const provider = createYoupin();
+const provider = (config.priceSource === 'youpin' ? createYoupin() : createCsgotrader());
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] },

@@ -1,7 +1,7 @@
 import { fetchInventory, resolveSteamId } from './steam.js';
 import { quoteItems, priceOf, MODES } from './quote.js';
-import { getCnyBrl } from './fx.js';
-import { formatQuote, chunk, HELP, brl, cny } from './format.js';
+import { getRate } from './fx.js';
+import { formatQuote, chunk, HELP, brl, money } from './format.js';
 
 const ALIASES = { menor: 'menor', barata: 'menor', anuncio: 'menor', anúncio: 'menor', compra: 'compra', ordem: 'compra', buy: 'compra', maior: 'compra' };
 
@@ -35,17 +35,17 @@ export async function handle(text, { provider, prefix = '!', reply = async () =>
       const steamId = await resolveSteamId(rest, fetchImpl);
       const items = await fetchInventory(steamId, fetchImpl);
       if (!items.length) return ['Nenhum item negociável encontrado nesse inventário.'];
-      const rate = await getCnyBrl(fetchImpl);
+      const rate = await getRate(provider.currency, fetchImpl);
       const q = await quoteItems({ items, mode, provider, rate });
       return chunk(formatQuote(q));
     }
 
     if (['preco', 'preço', 'price'].includes(cmd)) {
       if (!rest) return [`Informe o nome exato. Ex: ${prefix}preco AK-47 | Redline (Field-Tested)`];
-      const rate = await getCnyBrl(fetchImpl);
+      const rate = await getRate(provider.currency, fetchImpl);
       const v = await priceOf(provider, mode, rest);
       if (!v) return [`Não encontrei "${rest}" no YouPin. Use o nome exato do Mercado Steam (em inglês).`];
-      return [`*${rest}*\n${MODES[mode].label}\n${cny(v)} → ${brl(v * rate)}`];
+      return [`*${rest}*\n${MODES[mode].label}\n${money(v, provider.currency)} → ${brl(v * rate)}`];
     }
     return [`Comando desconhecido. Envie ${prefix}ajuda`];
   } catch (e) {
