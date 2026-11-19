@@ -33,7 +33,7 @@ export function formatQuote(q, { maxRows = 40 } = {}) {
 export const HELP = (p) => `🤖 *Bot de cotação CS2 (YouPin898 via CS2 Trader)*
 
 *${p}cotar <steam> [menor|compra]*
-  Cota o inventário inteiro. Aceita o *link de troca*, SteamID64, link do perfil ou nome do perfil.
+  Cota o inventário inteiro. Com *link de troca* lê a janela de troca da Steam (mostra itens novos antes do inventário público). Também aceita SteamID64, link do perfil ou nome do perfil.
   • menor → menor anúncio no YouPin (padrão)
   • compra → maior ordem de compra no YouPin
 

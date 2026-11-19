@@ -4,6 +4,8 @@ export const config = {
   youpinToken: process.env.YOUPIN_TOKEN || '',
   youpinDeviceId: process.env.YOUPIN_DEVICE_ID || '',
   youpinBaseUrl: (process.env.YOUPIN_BASE_URL || 'https://api.youpin898.com').replace(/\/$/, ''),
+  steamSessionId: process.env.STEAM_SESSIONID || '',
+  steamLoginSecure: process.env.STEAM_LOGIN_SECURE || '',
   priceSource: (process.env.PRICE_SOURCE || 'csgotrader').toLowerCase(),
   csgotraderUrls: (process.env.CSGOTRADER_URL ? [process.env.CSGOTRADER_URL] : ['https://prices.csgotrader.app/latest/youpin898.json', 'https://prices.csgotrader.app/latest/youpin.json']),
   cnyBrlRate: num(process.env.CNY_BRL_RATE, null),

@@ -1,4 +1,4 @@
-import { fetchInventory, resolveSteamId } from './steam.js';
+import { fetchInventory, fetchTradeInventory, findTradeUrl, resolveSteamId } from './steam.js';
 import { quoteItems, priceOf, MODES } from './quote.js';
 import { getRate } from './fx.js';
 import { formatQuote, chunk, HELP, brl, money } from './format.js';
@@ -32,8 +32,10 @@ export async function handle(text, { provider, prefix = '!', reply = async () =>
     if (['cotar', 'menor', 'barata', 'compra', 'ordem'].includes(cmd)) {
       if (!rest) return [`Informe o perfil Steam. Ex: ${prefix}${cmd} https://steamcommunity.com/id/seuperfil`];
       await reply('🔎 Lendo inventário e consultando o YouPin898… pode levar um pouco.');
-      const steamId = await resolveSteamId(rest, fetchImpl);
-      const items = await fetchInventory(steamId, fetchImpl);
+      const tradeUrl = findTradeUrl(rest);
+      const items = tradeUrl
+        ? await fetchTradeInventory(tradeUrl, fetchImpl)
+        : await fetchInventory(await resolveSteamId(rest, fetchImpl), fetchImpl);
       if (!items.length) return ['Nenhum item negociável encontrado nesse inventário.'];
       const rate = await getRate(provider.currency, fetchImpl);
       const q = await quoteItems({ items, mode, provider, rate });

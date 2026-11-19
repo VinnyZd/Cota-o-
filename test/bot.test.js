@@ -82,3 +82,17 @@ test('link de troca vira SteamID64', async () => {
   assert.equal(await resolveSteamId('https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc'), '76561197960265729');
   assert.equal(await resolveSteamId('https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=xyz'), '76561198083722517');
 });
+
+import { fetchTradeInventory } from '../src/steam.js';
+test('inventário pela janela de troca', async () => {
+  const cfg = { steamSessionId: 's', steamLoginSecure: 'l' };
+  let seen;
+  const fetchImpl = async (url, opts) => { seen = { url, opts }; return { ok: true, status: 200, json: async () => ({
+    success: true, rgInventory: { 1: { id: '1', classid: '5', instanceid: '0', amount: '1' }, 2: { id: '2', classid: '5', instanceid: '0', amount: '1' } },
+    rgDescriptions: { '5_0': { market_hash_name: 'A', tradable: 1, marketable: 1 } }, more: false }) }; };
+  const url = 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc';
+  assert.deepEqual(await fetchTradeInventory(url, fetchImpl, cfg), [{ name: 'A', count: 2 }]);
+  assert.match(seen.url, /partner=76561197960265729/);
+  assert.equal(seen.opts.headers.referer, url);
+  await assert.rejects(fetchTradeInventory(url, fetchImpl, {}), /STEAM_SESSIONID/);
+});
