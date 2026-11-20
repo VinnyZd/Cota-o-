@@ -8,12 +8,22 @@ const { default: qrcode } = await import('qrcode-terminal');
 const { Client, LocalAuth } = wweb;
 
 const provider = (config.priceSource === 'youpin' ? createYoupin() : createCsgotrader());
+// PAIR_PHONE=5511999999999 → vincula por código de 8 dígitos (útil em servidor, sem escanear QR).
+const pairPhone = (process.env.PAIR_PHONE || '').replace(/\D/g, '');
 const client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] },
+  authStrategy: new LocalAuth({ dataPath: process.env.SESSION_DIR || '.wwebjs_auth' }),
+  ...(pairPhone ? { pairWithPhoneNumber: { phoneNumber: pairPhone, showNotification: true } } : {}),
+  puppeteer: {
+    headless: true,
+    executablePath: process.env.CHROME_PATH || undefined,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+  },
 });
 
-client.on('qr', (qr) => { console.log('Escaneie o QR code no WhatsApp (Aparelhos conectados):'); qrcode.generate(qr, { small: true }); });
+client.on('code', (code) => console.log(`Código de vinculação: ${code}\nWhatsApp > Aparelhos conectados > Conectar um aparelho > Conectar com número de telefone.`));
+
+client.on('qr', (qr) => {
+  if (pairPhone) return; console.log('Escaneie o QR code no WhatsApp (Aparelhos conectados):'); qrcode.generate(qr, { small: true }); });
 client.on('ready', () => console.log('Bot pronto. Envie !ajuda'));
 client.on('auth_failure', (m) => console.error('Falha de autenticação:', m));
 

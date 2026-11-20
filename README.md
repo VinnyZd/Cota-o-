@@ -13,6 +13,20 @@ Bot de WhatsApp que cota um inventário de CS2 com preços do **YouPin898**, em 
 
 `<steam>` pode ser o **link de troca** (`.../tradeoffer/new/?partner=...&token=...`), SteamID64, link do perfil (`/profiles/...` ou `/id/...`) ou o nome do perfil. O inventário precisa estar público quando se usa perfil/SteamID. Com **link de troca**, o bot lê a janela de troca da Steam (mostra itens novos antes do inventário público e funciona com inventário privado), mas precisa dos cookies `STEAM_SESSIONID` e `STEAM_LOGIN_SECURE` de uma conta logada, e só lista itens negociáveis. Esse caminho não foi validado contra a Steam real.
 
+## Local primeiro, nuvem depois
+**Local:** `./run-local.sh` (cria o `.env`, instala e inicia). Escaneie o QR, ou defina `PAIR_PHONE=5511...` para vincular por código.
+
+**Nuvem (Docker, qualquer VPS):**
+```bash
+git clone <repo> && cd Cota-o-
+cp .env.example .env     # preencha; defina PAIR_PHONE para vincular por código
+docker compose up -d --build
+docker compose logs -f   # mostra o código/QR de vinculação
+```
+A sessão do WhatsApp fica no volume `bot-data`, então reinicia sem pedir vínculo de novo. Para levar a sessão
+do local para a nuvem, não é preciso copiar nada: vincule de novo no servidor (um WhatsApp aceita vários aparelhos).
+Cuidado: rode em **um lugar por vez** com o mesmo número, para não ter respostas duplicadas.
+
 ## Como rodar
 ```bash
 npm install
